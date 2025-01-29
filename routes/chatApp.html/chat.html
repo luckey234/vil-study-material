@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+</head>
+<body>
+    <div class="container mt-3">
+        <h1>WebSocket Chat  <span id="ws-id"></span> </h1>
+        <form id="chat-form">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button type="submit">Send</button>
+        </form>
+        <ul id="messages"></ul>
+    </div>
+
+    <script>
+        const client_id = Date.now();
+        document.querySelector("#ws-id").textContent = '#'+client_id;
+        const ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+        ws.onmessage = function(event) {
+            const messages = document.getElementById('messages');
+            const message = document.createElement('li');
+            debugger
+            if (typeof event.data === 'string') {
+                // Handle string messages directly
+                const content = document.createTextNode(event.data);
+                message.appendChild(content);
+            } else {
+                // Handle Blob messages (assuming it's text)
+                event.data.text().then(text => {
+                    const content = document.createTextNode(text);
+                    message.appendChild(content);
+                });
+            }
+
+            messages.appendChild(message);
+        };
+
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const input = document.getElementById('messageText');
+            ws.send(input.value);
+            input.value = '';
+        });
+    </script>
+</body>
+
+</html>
